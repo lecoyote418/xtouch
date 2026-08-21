@@ -1,5 +1,3 @@
-# This Fork
-
 This is a fork of [xperiments-in/xtouch](https://github.com/xperiments-in/xtouch) with the following changes:
 
 - **DHT22 sensor support** alongside the original DS18B20, selectable via a single compile-time toggle — no need to maintain two branches.
