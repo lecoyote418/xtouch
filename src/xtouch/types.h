@@ -158,6 +158,11 @@ extern "C"
         int xTouchTFTOFFValue;
         bool xTouchWakeOnPrint;
         int currentScreenIndex;
+        bool xTouchHAEnabled;
+        char xTouchHAHost[40];
+        int xTouchHAPort;
+        char xTouchHAUser[32];
+        char xTouchHAPassword[32];
     } XTouchConfig;
 
     XTouchConfig xTouchConfig;

@@ -63,6 +63,7 @@ void setup()
   xtouch_setupGlobalEvents();
 
   xtouch_mqtt_setup();
+  xtouch_ha_mqtt_setup();
   xtouch_chamber_timer_init();
 }
 
@@ -71,4 +72,5 @@ void loop()
   lv_timer_handler();
   lv_task_handler();
   xtouch_mqtt_loop();
+  xtouch_ha_mqtt_loop();
 }
