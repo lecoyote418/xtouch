@@ -1,3 +1,68 @@
+# This Fork
+
+This is a fork of [xperiments-in/xtouch](https://github.com/xperiments-in/xtouch) with the following changes:
+
+- **DHT22 sensor support** alongside the original DS18B20, selectable via a single compile-time toggle — no need to maintain two branches.
+- **Home Assistant integration**: the chamber temperature reading (from either sensor) is published to a local MQTT broker using Home Assistant MQTT Discovery, so a "Chamber Temperature" sensor entity appears automatically in Home Assistant — independent of, and in addition to, the official Bambu Lab HA integration.
+
+## Building and Flashing From Source
+
+This fork isn't published to the official online installer, so it needs to be built and flashed yourself with [PlatformIO](https://platformio.org/).
+
+1. **Install PlatformIO** — either the [VS Code extension](https://platformio.org/install/ide?install=vscode), or the CLI via `pip install platformio`.
+2. **Clone this repo** and open the folder in VS Code (PlatformIO auto-detects `platformio.ini`), or `cd` into it for CLI use.
+3. **Build**: `pio run`
+4. **Flash**: connect the board with a USB *data* cable (not charge-only), then `pio run -t upload`
+5. **Watch boot logs** (optional but useful for troubleshooting): `pio device monitor`
+
+PlatformIO fetches all required libraries automatically from `platformio.ini` on first build.
+
+### Choosing your chamber sensor
+
+Open `src/xtouch/sensors/chamber.h` and set:
+
+```cpp
+#define XTOUCH_CHAMBER_SENSOR_TYPE XTOUCH_CHAMBER_SENSOR_DHT22
+```
+
+Change the value to `XTOUCH_CHAMBER_SENSOR_DS18B20` to use the original DS18B20 sensor instead. Both are wired to the same pin (GPIO22) — see the original [temperature sensor guide](docs/temperature-sensor.md) for wiring details.
+
+### Publishing chamber temperature to Home Assistant
+
+Add an optional `homeassistant` block to your `xtouch.json` on the SD card, alongside the existing `mqtt` block:
+
+```json
+{
+  "ssid": "your-wifi",
+  "pwd": "your-password",
+  "mqtt": {
+    "host": "192.168.x.x",
+    "accessCode": "...",
+    "serialNumber": "...",
+    "printerModel": "P1P"
+  },
+  "homeassistant": {
+    "enabled": true,
+    "host": "192.168.x.x",
+    "port": 1883,
+    "user": "your_mqtt_user",
+    "password": "your_mqtt_pass"
+  }
+}
+```
+
+Point `homeassistant.host` at whatever broker your Home Assistant MQTT integration already uses. Leave `user`/`password` as empty strings (`""`) if your broker allows anonymous connections. If the `homeassistant` block is omitted entirely, this feature is simply skipped — everything else behaves exactly like upstream.
+
+Once flashed, a "Chamber Temperature" sensor entity should appear automatically in Home Assistant within a few seconds of boot, under a new device — no manual entity configuration needed.
+
+---
+
+# Original xtouch README
+
+Everything below this line is the unmodified upstream documentation.
+
+---
+
 # ![image](readme-assets/xtouch.png)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3I8PSAYU)
