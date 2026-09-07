@@ -1,14 +1,19 @@
-#ifndef _XLCD_EVENTS
-#define _XLCD_EVENTS
+#ifndef _XLCD_CONFIG
+#define _XLCD_CONFIG
 
 void xtouch_events_onResetDevice(lv_msg_t *m)
 {
     ESP.restart();
 }
 
+void xtouch_events_onUnPair(lv_msg_t *m)
+{
+    cloud.unpair();
+}
+
 void xtouch_events_onCloudSelect(lv_msg_t *m)
 {
-    // xtouch_cloud_pair_loop_exit = true;
+    xtouch_cloud_pair_loop_exit = true;
 }
 
 void xtouch_events_onBackLight(lv_msg_t *m)
@@ -46,7 +51,7 @@ void xtouch_events_onTFTInvert(lv_msg_t *m)
     settings["tftInvert"] = value ? true : false;
     xtouch_filesystem_writeJson(SD, xtouch_paths_settings, settings);
     xTouchConfig.xTouchTFTInvert = value;
-    xtouch_screen_invertColors();
+    //xtouch_screen_invertColors();
 }
 
 void xtouch_events_onSettingsSave(lv_msg_t *m)
@@ -79,6 +84,8 @@ void xtouch_events_onChamberTempSwitch(lv_msg_t *m)
 void xtouch_setupGlobalEvents()
 {
     lv_msg_subscribe(XTOUCH_SETTINGS_RESET_DEVICE, (lv_msg_subscribe_cb_t)xtouch_events_onResetDevice, NULL);
+    lv_msg_subscribe(XTOUCH_SETTINGS_UNPAIR, (lv_msg_subscribe_cb_t)xtouch_events_onUnPair, NULL);
+    lv_msg_subscribe(XTOUCH_ON_CLOUD_SELECT, (lv_msg_subscribe_cb_t)xtouch_events_onCloudSelect, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_BACKLIGHT, (lv_msg_subscribe_cb_t)xtouch_events_onBackLight, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_BACKLIGHT_SET, (lv_msg_subscribe_cb_t)xtouch_events_onBackLightSet, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_TFTOFF_SET, (lv_msg_subscribe_cb_t)xtouch_events_onTFTTimerSet, NULL);

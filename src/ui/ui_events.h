@@ -44,6 +44,7 @@ extern "C"
     /* Settings */
 
     void onSettingsResetDevice(lv_event_t *e);
+    void onSettingsUnPair(lv_event_t *e);
     void onSettingsClearAccesCodeCache(lv_event_t *e);
     void onSettingsAuxFan(lv_event_t *e);
     void onSettingsChamberFan(lv_event_t *e);

@@ -1,82 +1,12 @@
-This is a fork of [xperiments-in/xtouch](https://github.com/xperiments-in/xtouch) with the following changes:
-
-- **DHT22 sensor support** alongside the original DS18B20, selectable via a single compile-time toggle — no need to maintain two branches.
-- **Home Assistant integration**: the chamber temperature reading (from either sensor) is published to a local MQTT broker using Home Assistant MQTT Discovery, so a "Chamber Temperature" sensor entity appears automatically in Home Assistant — independent of, and in addition to, the official Bambu Lab HA integration.
-
-## Building and Flashing From Source
-
-This fork isn't published to the official online installer, so it needs to be built and flashed yourself with [PlatformIO](https://platformio.org/).
-
-1. **Install PlatformIO** — either the [VS Code extension](https://platformio.org/install/ide?install=vscode), or the CLI via `pip install platformio`.
-2. **Clone this repo** and open the folder in VS Code (PlatformIO auto-detects `platformio.ini`), or `cd` into it for CLI use.
-3. **Build**: `pio run`
-4. **Flash**: connect the board with a USB *data* cable (not charge-only), then `pio run -t upload`
-5. **Watch boot logs** (optional but useful for troubleshooting): `pio device monitor`
-
-PlatformIO fetches all required libraries automatically from `platformio.ini` on first build.
-
-### Choosing your chamber sensor
-
-Open `src/xtouch/sensors/chamber.h` and set:
-
-```cpp
-#define XTOUCH_CHAMBER_SENSOR_TYPE XTOUCH_CHAMBER_SENSOR_DHT22
-```
-
-Change the value to `XTOUCH_CHAMBER_SENSOR_DS18B20` to use the original DS18B20 sensor instead. Both are wired to the same pin (GPIO22) — see the original [temperature sensor guide](docs/temperature-sensor.md) for wiring details.
-
-### Publishing chamber temperature to Home Assistant
-
-Add an optional `homeassistant` block to your `xtouch.json` on the SD card, alongside the existing `mqtt` block:
-
-```json
-{
-  "ssid": "your-wifi",
-  "pwd": "your-password",
-  "mqtt": {
-    "host": "192.168.x.x",
-    "accessCode": "...",
-    "serialNumber": "...",
-    "printerModel": "P1P"
-  },
-  "homeassistant": {
-    "enabled": true,
-    "host": "192.168.x.x",
-    "port": 1883,
-    "user": "your_mqtt_user",
-    "password": "your_mqtt_pass"
-  }
-}
-```
-
-Point `homeassistant.host` at whatever broker your Home Assistant MQTT integration already uses. Leave `user`/`password` as empty strings (`""`) if your broker allows anonymous connections. If the `homeassistant` block is omitted entirely, this feature is simply skipped — everything else behaves exactly like upstream.
-
-Once flashed, a "Chamber Temperature" sensor entity should appear automatically in Home Assistant within a few seconds of boot, under a new device — no manual entity configuration needed.
-
----
-
-# Original xtouch README
-
-Everything below this line is the unmodified upstream documentation.
-
----
-
 # ![image](readme-assets/xtouch.png)
+
+# Fork for 5Inch ESP32-8048S050, with some visual tweaks.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3I8PSAYU)
 
 [Discord Server](https://discord.gg/RytEDEgfR3)
 
-## NEW 5 inch Screen
-
-![image](readme-assets/xtouch_5.png)
-
-### xtouch-pro **NEW WEBSITE**
-
-- [https://xtouch.pro/](https://xtouch.pro/)
-- [BUY New 5inch Screen](https://s.click.aliexpress.com/e/_DBdoa6n)
-
-## 2.8 - Table of Contents
+## Table of Contents
 
 1. [Introduction](#introduction)
    - [Required Hardware](#required-hardware)
@@ -84,6 +14,10 @@ Everything below this line is the unmodified upstream documentation.
    - [Powering the xtouch Screen](#powering-the-xtouch-screen)
 2. [Features](#features)
 3. [Installation](#installation)
+   - [Install Drivers](#install-drivers)
+   - [Prepare the SD card](#prepare-the-sd-card)
+   - [Online Web Installer](#online-web-installer)
+   - [Linking Printer](#linking-printer)
 4. [Screens](#screens)
    - [Main](#main-screen)
    - [Temperature / Fan](#temperature--fan-screen)
@@ -172,46 +106,83 @@ The choice between USB and the JST 1.25 4-pin connector depends on your preferen
 
 ## Installation
 
-# xtouch Screen Setup and Installation Guide
+### Install Drivers
 
-This guide will walk you through the steps required to initialize and configure your xtouch screen for use with your 3D printer.
+[Install CH340 Drivers](https://www.wch.cn/download/CH341SER_ZIP.html)
+[Install CH340 Drivers + Tutorial](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all)
 
----
+### Prepare the SD card
 
-## Required Tools and Preparation
+Before you begin the installation process for the xtouch screen, it's essential to properly initialize your SD card with the necessary configuration for connecting to your WiFi network. Follow these steps carefully:
 
-Before beginning, ensure you have the following:
+1. **Format the SD Card in FAT32**:
 
-1. **Computer with Google Chrome Installed** (only for downloading the config file)
+   - Ensure your SD card is formatted with the FAT32 file system. You can use your computer's built-in formatting tools or third-party software to format the card if needed.
 
-2. **USB Cable**
+2. **Create a Configuration File**:
 
-3. **Formatted FAT32 SD Card (≤ 32GB Recommended)**
+   - Use the online configuration [TOOL](https://xperiments.in/xtouch-bin/config.html) to generate a `config.json` file.
+   - Place it on the root directory of the SD card.
 
-4. **xtouch.json Configuration File**
+   Your SD card is now properly initialized with the required configuration. This configuration will enable the xtouch screen to connect to your WiFi network and BambuLab servers during the installation process. Ensure that the SD card is securely inserted into the touch screen before proceeding with the installation steps outlined in the previous sections of this README.md file.
 
-   - Visit: **[https://xperiments.in/xtouch-bin/localOnly.html](https://xperiments.in/xtouch-bin/localOnly.html)**
-   - Fill in the required information (WiFi SSID, Password, and your BambuLab account details).
-   - Download the `xtouch.json` file and place it on the **root of the SD card**.
+### Online Web Installer
 
-## No Chrome extensions, token logins, or cloud provisioning are needed anymore!
+To set up your xtouch screen, you will need to use the Online Web Installer. Follow these steps to complete the installation:
 
-## Installation Process
+1. **Open a Web Browser**:
 
-### Step 1: Open the Online Installer in Google Chrome
+   - Open your preferred web browser on a computer.
 
-1. Open **Google Chrome** on your computer.
-   > **Note:** Other browsers are not supported for this process.
-2. Navigate to the installer page by entering the following URL:  
-   **[https://xperiments.in/xtouch-bin](https://xperiments.in/xtouch-bin)**
+2. **Enter the Web Installer URL**:
 
-### Step 2: Use the Online Installer
+   - In the browser's address bar, enter the following URL: [https://xperiments.in/xtouch-bin](https://xperiments.in/xtouch-bin)
 
-1. On the web page, click the **"Connect"** button to establish a connection between your computer and the xtouch screen.
-2. From the list of available ports displayed, select the serial port assigned to your xtouch screen.
-3. Once connected, click the **"Install xtouch"** button to start the installation process.
+3. **Connect Button**:
 
----
+   - On the web page, locate and click the "Connect" button to establish a connection between your computer and the xtouch screen.
+
+4. **Select xtouch serial Port**:
+
+   - After clicking "Connect," a list of available serial ports will be displayed. Choose the one asigned to your xtouch so establish a connection with the touch screen.
+
+5. **Install xtouch**:
+
+   - Once you've selected the correct serial port, click the "Install xtouch"sbutton on the web page. This will initiate the installation process.
+
+6. **Installation Completion**:
+
+   - Wait for the installation to complete. You will receive a confirmation message or indication on the web page once the installation process finishes.
+
+7. **Power Off the Screen**:
+
+   - Turn off the xtouch screen.
+
+8. **Power On the Screen**:
+
+   - Turn on the xtouch screen. It will now be fully initialized and ready for use with your 3D printer.
+
+### Linking Printer
+
+During the installation process, you will need to link your xtouch screen with your 3D printer. Follow these steps to successfully establish the connection:
+
+1. **Searching for Printers**:
+
+   - After powering on the touch screen, you will be greeted with a "Searching for printers" screen. The touch screen will scan for available printers.
+
+2. **Select a Printer to Link**:
+
+   - Once the scanning process is complete, you will be presented with a listing of the printers that were found. Select the printer you wish to link.
+
+3. **Click the Checkmark Button**:
+
+   - After selecting the desired printer, click the green checkmark button to initiate the linking process.
+
+4. **Success and Main Screen**:
+
+   - Upon successfully linking the touch screen with the printer, you will be redirected to the Main Screen. Your printer and touch screen are now connected and ready for use.
+
+By following these steps, you will be able to link your xtouch screen with your 3D printer seamlessly, ensuring a smooth user experience and easy access to all the features of the touch screen.
 
 ## Screens
 
@@ -250,6 +221,10 @@ This screen provides essential controls for managing your printer:
 - **Invert Screen Colors**: Toggle to reverse screen colors. Useful for addressing compatibility issues with certain devices.
 - **Flip Screen**: Flip the screen orientation.
 
+#### PRINTERS
+
+- **Unlink Printer**: Disconnect the current printer from the touch screen. This allows you to switch between different printers seamlessly.
+
 #### XTOUCH
 
 - **AUX FAN**: Enable the auxiliary fan for printers that initially lack it.
@@ -284,12 +259,12 @@ If you prefer to manually update the firmware of your xtouch screen or if OTA up
 
 1. **Download the Update Firmware File**:
 
-   - Visit the official xtouch sebsite or the designated firmware update source to download the latest firmware update file. Ensure that you download this file with the [firmware.bin](https://github.com/xperiments/xtouch-bin/raw/refs/heads/main/fw/firmware.bin) name.
+   - Visit the official xtouch sebsite or the designated firmware update source to download the latest firmware update file. Ensure that you download this file with the [firmware.bin](https://xperiments.in/xtouch-bin/fw/firmware.bin) name.
 
 2. **Copy the Firmware File to the Root of the SD Card**:
 
    - Insert the SD card into your computer's card reader.
-   - Copy the downloaded firmware update file [firmware.bin](https://github.com/xperiments/xtouch-bin/raw/refs/heads/main/fw/firmware.bin) to the root directory of the SD card. Do not place it in any subdirectories.
+   - Copy the downloaded firmware update file [firmware.bin](https://xperiments.in/xtouch-bin/fw/firmware.bin) to the root directory of the SD card. Do not place it in any subdirectories.
 
 3. **Reboot the xtouch screen**:
 
@@ -325,7 +300,23 @@ If you encounter issues during the installation or operation of your BambuLab Pr
 
    - Keep in mind that SD cards from different manufacturers may behave differently. While many SD cards work seamlessly, some may not be fully compatible with the touch screen. If you experience issues with an SD card, consider trying a different brand or model to see if it resolves the problem.
 
-3. **Recalibrating the Screen**:
+3. **WiFi Connection Loop**:
+
+   - In some cases, users have reported that after confirming their WiFi credentials are correct, the device enters into a continuous loop without establishing a connection. This issue can sometimes be resolved by adjusting the WiFi connection timeout.
+
+   - To do this, modify the `config.json` file and include a numerical parameter for the timeout. Increasing the timeout value can help address this issue.
+
+   - Use the [Online config.json Form](https://xperiments.in/xtouch-bin/config.html) for step-by-step instructions.
+
+4. **Endless Reboots in Printer Startup**:
+
+   - Sometimes, users may encounter an issue where the printer and xtouch screen go through an endless reboot cycle during the device's power-on process, preventing xtouch from becoming ready. This problem can often be resolved by adjusting the "coldboot" value within the `config.json` configuration file.
+
+   - To address this issue, open the `config.json` file and include a numerical parameter for the "coldboot" parameter. This parameter specifies the duration in milliseconds the system should wait for initialization after a cold boot. By increasing the "coldboot" value, you provide the system with more time to complete the startup process successfully.
+
+   - Use the [Online config.json Form](https://xperiments.in/xtouch-bin/config.html) for step-by-step instructions.
+
+5. **Recalibrating the Screen**:
 
    If you encounter touch screen calibration issues or misalignment, you can recalibrate the screen by removing the `touch.json` file located in the `xtouch` directory on the SD card. Follow these steps:
 

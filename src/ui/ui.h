@@ -38,6 +38,8 @@ extern "C"
   void ui_controlScreen_screen_init(void);
   void ui_settingsScreen_screen_init(void);
   void ui_filamentScreen_screen_init(void);
+  void ui_accessCodeScreen_screen_init(void);
+  void ui_printerPairScreen_screen_init(void);
 
   lv_obj_t *introScreen;
   lv_obj_t *introScreenIcon;
@@ -80,6 +82,12 @@ extern "C"
   LV_FONT_DECLARE(ui_font_xlcd);
   LV_FONT_DECLARE(ui_font_xlcdmin);
   LV_FONT_DECLARE(ui_font_xperiments);
+  LV_FONT_DECLARE(ui_font_xlcd48);
+
+  extern const lv_font_t *lv_font_small;
+  extern const lv_font_t *lv_font_big;
+  extern const lv_font_t *lv_icon_font_small;
+  extern const lv_font_t *lv_icon_font_big;
 
   void ui_init(void);
 

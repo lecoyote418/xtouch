@@ -12,10 +12,11 @@
 #include "xtouch/sdcard.h"
 #include "xtouch/hms.h"
 
-#if defined(__XTOUCH_SCREEN_28__)
-#include "devices/2.8/screen.h"
+#if defined(__XTOUCH_SCREEN_50__)
+#include "devices/5.0/screen.h"
 #endif
 
+#include "xtouch/cloud.hpp"
 #include "xtouch/settings.h"
 #include "xtouch/net.h"
 #include "xtouch/firmware.h"
@@ -57,13 +58,22 @@ void setup()
   while (!xtouch_wifi_setup())
     ;
 
-  xtouch_firmware_checkOnlineFirmwareUpdate();
+  //xtouch_firmware_checkOnlineFirmwareUpdate();
 
   xtouch_screen_setupScreenTimer();
   xtouch_setupGlobalEvents();
-
+  if (cloud.login())
+  {
+    if (!cloud.isPaired())
+    {
+      cloud.selectPrinter();
+    }
+    else
+    {
+      cloud.loadPair();
+    }
+  }
   xtouch_mqtt_setup();
-  xtouch_ha_mqtt_setup();
   xtouch_chamber_timer_init();
 }
 
@@ -72,5 +82,4 @@ void loop()
   lv_timer_handler();
   lv_task_handler();
   xtouch_mqtt_loop();
-  xtouch_ha_mqtt_loop();
 }

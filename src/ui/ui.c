@@ -11,6 +11,8 @@ void ui_temperatureScreen_screen_init(void);
 void ui_controlScreen_screen_init(void);
 void ui_settingsScreen_screen_init(void);
 void ui_filamentScreen_screen_init(void);
+void ui_accessCodeScreen_screen_init(void);
+void ui_printerPairScreen_screen_init(void);
 
 lv_obj_t *introScreen;
 lv_obj_t *introScreenIcon;
@@ -49,6 +51,15 @@ lv_obj_t *ui_printerPairScreenSubmitButton;
 lv_obj_t *ui_mainScreenChamberTempValue;
 void ui_event____initial_actions0(lv_event_t *e);
 lv_obj_t *ui____initial_actions0;
+
+
+
+const lv_font_t *lv_font_small = &lv_font_montserrat_28;
+const lv_font_t *lv_font_big = &lv_font_montserrat_48;
+const lv_font_t *lv_icon_font_small = &ui_font_xlcd;
+const lv_font_t *lv_icon_font_big = &ui_font_xlcd48;
+
+
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
