@@ -1,49 +1,52 @@
 #ifndef _XLCD_CONNECTION
 #define _XLCD_CONNECTION
 
-#include "mbedtls/base64.h"
-
-String xtouch_wifi_setup_decodeString(String inputString)
-{
-    const unsigned char *input = (const unsigned char *)inputString.c_str();
-    size_t inputLength = strlen((const char *)input);
-
-    // Calculate the exact maximum length for the output buffer
-    size_t maxOutputLength = (inputLength * 3) / 4;
-    unsigned char output[maxOutputLength + 1]; // +1 for the null terminator
-    size_t outlen;
-
-    int ret = mbedtls_base64_decode(output, maxOutputLength, &outlen, input, inputLength);
-
-    if (ret == 0)
-    {
-        output[outlen] = '\0'; // Null-terminate the output
-        return String((char *)output);
-    }
-
-    Serial.println("Failed to decode base64");
-    return "";
-}
-
 bool xtouch_wifi_setup()
 {
-    DynamicJsonDocument wifiConfig = xtouch_filesystem_readJson(SD, xtouch_paths_config);
-    if (wifiConfig.isNull() || !wifiConfig.containsKey("ssid") || !wifiConfig.containsKey("pwd"))
+    DynamicJsonDocument wifiConfig =
+        xtouch_filesystem_readJson(SD, xtouch_paths_config);
+
+    if (wifiConfig.isNull() ||
+        !wifiConfig.containsKey("ssid") ||
+        !wifiConfig.containsKey("pwd"))
     {
-        lv_label_set_text(introScreenCaption, wifiConfig.isNull() ? LV_SYMBOL_SD_CARD " Missing config.json" : LV_SYMBOL_WARNING " Inaccurate config.json");
-        lv_obj_set_style_text_color(introScreenCaption, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_label_set_text(
+            introScreenCaption,
+            wifiConfig.isNull()
+                ? LV_SYMBOL_SD_CARD " Missing config.json"
+                : LV_SYMBOL_WARNING " Inaccurate config.json"
+        );
+
+        lv_obj_set_style_text_color(
+            introScreenCaption,
+            lv_color_hex(0xFF0000),
+            LV_PART_MAIN | LV_STATE_DEFAULT
+        );
+
         lv_timer_handler();
         lv_task_handler();
+
         return false;
     }
 
-    String ssidB64String = xtouch_wifi_setup_decodeString(wifiConfig["ssid"].as<const char *>());
-    String ssidPWDString = xtouch_wifi_setup_decodeString(wifiConfig["pwd"].as<const char *>());
+    String ssidString =
+        wifiConfig["ssid"].as<const char *>();
 
-    int timeout = wifiConfig.containsKey("timeout") ? wifiConfig["timeout"].as<int>() : 3000;
+    String passwordString =
+        wifiConfig["pwd"].as<const char *>();
+
+    int timeout =
+        wifiConfig.containsKey("timeout")
+            ? wifiConfig["timeout"].as<int>()
+            : 3000;
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssidB64String.c_str(), ssidPWDString.c_str());
+
+    WiFi.begin(
+        ssidString.c_str(),
+        passwordString.c_str()
+    );
+
     ConsoleInfo.println(F("[XTOUCH][CONNECTION] Connecting to WiFi .."));
 
     lv_label_set_text(introScreenCaption, LV_SYMBOL_WIFI " Connecting");

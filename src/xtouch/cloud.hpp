@@ -153,18 +153,37 @@ public:
     delay(32);
 
     _auth_token = _getAuthToken();
+
+    if (_auth_token == "")
+    {
+        Serial.println("[XTOUCH][CLOUD] Bambu Cloud unavailable - continuing without cloud connection");
+
+        lv_label_set_text(
+            introScreenCaption,
+            LV_SYMBOL_WIFI " LAN mode"
+        );
+        lv_timer_handler();
+        lv_task_handler();
+        delay(1000);
+
+        return false;
+    }
+
     _username = _getUserFromAuthToken();
 
-    if (_auth_token == "" || _username == "")
+    if (_username == "")
     {
+        Serial.println("[XTOUCH][CLOUD] Invalid Bambu Cloud JWT - continuing without cloud connection");
 
-      lv_label_set_text(introScreenCaption, LV_SYMBOL_CHARGE " Fatal BBL JWT parsing error");
-      lv_timer_handler();
-      lv_task_handler();
-      delay(3000);
-      ESP.restart();
+        lv_label_set_text(
+            introScreenCaption,
+            LV_SYMBOL_WIFI " LAN mode"
+        );
+        lv_timer_handler();
+        lv_task_handler();
+        delay(1000);
 
-      return false;
+        return false;
     }
 
     lv_label_set_text(introScreenCaption, LV_SYMBOL_CHARGE " Logged to BBL Cloud");
