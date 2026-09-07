@@ -46,7 +46,7 @@ void xtouch_events_onTFTInvert(lv_msg_t *m)
     settings["tftInvert"] = value ? true : false;
     xtouch_filesystem_writeJson(SD, xtouch_paths_settings, settings);
     xTouchConfig.xTouchTFTInvert = value;
-    xtouch_screen_invertColors();
+    // 5-inch RGB panel has no TFT_eSPI invertColors() path.
 }
 
 void xtouch_events_onSettingsSave(lv_msg_t *m)

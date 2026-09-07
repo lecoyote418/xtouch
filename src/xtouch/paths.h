@@ -3,7 +3,7 @@
 
 const char *xtouch_paths_eeprom = "/eeprom.bin";
 const char *xtouch_paths_root = "/xtouch";
-const char *xtouch_paths_config = "/xtouch.json";
+const char *xtouch_paths_config = "/config.json";
 
 const char *xtouch_paths_settings = "/xtouch/settings.json";
 const char *xtouch_paths_touch = "/xtouch/touch.json";

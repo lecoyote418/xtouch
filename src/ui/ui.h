@@ -80,6 +80,12 @@ extern "C"
   LV_FONT_DECLARE(ui_font_xlcd);
   LV_FONT_DECLARE(ui_font_xlcdmin);
   LV_FONT_DECLARE(ui_font_xperiments);
+  LV_FONT_DECLARE(ui_font_xlcd48);
+
+  extern const lv_font_t *lv_font_small;
+  extern const lv_font_t *lv_font_big;
+  extern const lv_font_t *lv_icon_font_small;
+  extern const lv_font_t *lv_icon_font_big;
 
   void ui_init(void);
 

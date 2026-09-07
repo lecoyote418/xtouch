@@ -6,7 +6,7 @@ void xtouch_settings_save(bool onlyRoot = false)
     DynamicJsonDocument doc(256);
     doc["backlight"] = xTouchConfig.xTouchBacklightLevel;
     doc["tftOff"] = xTouchConfig.xTouchTFTOFFValue;
-    doc["tftInvert"] = xTouchConfig.xTouchTFTInvert;
+    doc["tftInvert"] = false;
     doc["ota"] = xTouchConfig.xTouchOTAEnabled;
     doc["wop"] = xTouchConfig.xTouchWakeOnPrint;
     doc["chamberTempDiff"] = xTouchConfig.xTouchChamberSensorReadingDiff;
@@ -38,7 +38,7 @@ void xtouch_settings_loadSettings()
 
     xTouchConfig.xTouchBacklightLevel = settings.containsKey("backlight") ? settings["backlight"].as<int>() : 128;
     xTouchConfig.xTouchTFTOFFValue = settings.containsKey("tftOff") ? settings["tftOff"].as<int>() : 15;
-    xTouchConfig.xTouchTFTInvert = settings.containsKey("tftInvert") ? settings["tftInvert"].as<bool>() : false;
+    xTouchConfig.xTouchTFTInvert = false;
     xTouchConfig.xTouchOTAEnabled = settings.containsKey("ota") ? settings["ota"].as<bool>() : false;
     xTouchConfig.xTouchWakeOnPrint = settings.containsKey("wop") ? settings["wop"].as<bool>() : true;
     xTouchConfig.xTouchChamberSensorReadingDiff = settings.containsKey("chamberTempDiff") ? settings["chamberTempDiff"].as<int8_t>() : 0;
@@ -46,12 +46,8 @@ void xtouch_settings_loadSettings()
     xTouchConfig.xTouchAuxFanEnabled = settings.containsKey("auxFan") ? settings["auxFan"].as<bool>() : false;
     xTouchConfig.xTouchChamberFanEnabled = settings.containsKey("chamberFan") ? settings["chamberFan"].as<bool>() : false;
 
-    bool isTFTFlipped = xtouch_screen_getTFTFlip();
-    tft.setRotation(isTFTFlipped ? 3 : 1);
-    x_touch_touchScreen.setRotation(isTFTFlipped ? 3 : 1);
     xtouch_screen_setBrightness(xTouchConfig.xTouchBacklightLevel);
 
-    xtouch_screen_invertColors();
 }
 
 #endif

@@ -1,27 +1,52 @@
 #ifndef _XLCD_CONNECTION
 #define _XLCD_CONNECTION
 
-#include "mbedtls/base64.h"
-
 bool xtouch_wifi_setup()
 {
-    DynamicJsonDocument wifiConfig = xtouch_load_config();
-    if (wifiConfig.isNull() || !wifiConfig.containsKey("ssid") || !wifiConfig.containsKey("pwd"))
+    DynamicJsonDocument wifiConfig =
+        xtouch_filesystem_readJson(SD, xtouch_paths_config);
+
+    if (wifiConfig.isNull() ||
+        !wifiConfig.containsKey("ssid") ||
+        !wifiConfig.containsKey("pwd"))
     {
-        lv_label_set_text(introScreenCaption, wifiConfig.isNull() ? LV_SYMBOL_SD_CARD " Missing provisioning.json" : LV_SYMBOL_WARNING " Inaccurate provisioning.json");
-        lv_obj_set_style_text_color(introScreenCaption, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_label_set_text(
+            introScreenCaption,
+            wifiConfig.isNull()
+                ? LV_SYMBOL_SD_CARD " Missing config.json"
+                : LV_SYMBOL_WARNING " Inaccurate config.json"
+        );
+
+        lv_obj_set_style_text_color(
+            introScreenCaption,
+            lv_color_hex(0xFF0000),
+            LV_PART_MAIN | LV_STATE_DEFAULT
+        );
+
         lv_timer_handler();
         lv_task_handler();
+
         return false;
     }
 
-    String ssidB64String = wifiConfig["ssid"].as<const char *>();
-    String ssidPWDString = wifiConfig["pwd"].as<const char *>();
+    String ssidString =
+        wifiConfig["ssid"].as<const char *>();
 
-    int timeout = wifiConfig.containsKey("timeout") ? wifiConfig["timeout"].as<int>() : 3000;
+    String passwordString =
+        wifiConfig["pwd"].as<const char *>();
+
+    int timeout =
+        wifiConfig.containsKey("timeout")
+            ? wifiConfig["timeout"].as<int>()
+            : 3000;
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssidB64String.c_str(), ssidPWDString.c_str());
+
+    WiFi.begin(
+        ssidString.c_str(),
+        passwordString.c_str()
+    );
+
     ConsoleInfo.println(F("[XTOUCH][CONNECTION] Connecting to WiFi .."));
 
     lv_label_set_text(introScreenCaption, LV_SYMBOL_WIFI " Connecting");

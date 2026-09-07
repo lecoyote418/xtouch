@@ -12,8 +12,8 @@
 #include "xtouch/sdcard.h"
 #include "xtouch/hms.h"
 
-#if defined(__XTOUCH_SCREEN_28__)
-#include "devices/2.8/screen.h"
+#if defined(__XTOUCH_SCREEN_50__)
+#include "devices/5.0/screen.h"
 #endif
 
 #include "xtouch/settings.h"
