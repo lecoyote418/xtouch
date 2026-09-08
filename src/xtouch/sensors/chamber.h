@@ -3,7 +3,7 @@
 
 #include "ha_mqtt.h"
 
-#define XTOUCH_CHAMBER_TEMP_PIN 22
+#define XTOUCH_CHAMBER_TEMP_PIN 17
 
 // ---- Pick your physical chamber sensor here ----
 // Set to DHT22 or DS18B20. Only one can be active per build.
