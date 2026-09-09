@@ -14,6 +14,10 @@
 
 #if defined(__XTOUCH_SCREEN_50__)
 #include "devices/5.0/screen.h"
+#elif defined(__XTOUCH_SCREEN_28__)
+#include "devices/2.8/screen.h"
+#else
+#error "Define __XTOUCH_SCREEN_50__ or __XTOUCH_SCREEN_28__ (set automatically by the platformio.ini environment you build)"
 #endif
 
 #include "xtouch/settings.h"

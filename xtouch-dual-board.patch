@@ -1,0 +1,153 @@
+diff --git a/platformio.ini b/platformio.ini
+index ff08802..8d31bcf 100644
+--- a/platformio.ini
++++ b/platformio.ini
+@@ -1,35 +1,66 @@
+ ; PlatformIO Project Configuration File
+ ;
+-; XTouch - 5-inch ESP32-S3 / JC8048W550C_I
+-
+-[env:esp32dev]
+-platform = espressif32
+-board = esp32-s3-devkitc-1
+-framework = arduino
+-
+-lib_ldf_mode = deep+
++; XTouch - supports both the original 2.8" ESP32-2432S028R board and the
++; 5" ESP32-S3 JC8048W550C_I board. Pick the environment matching your
++; hardware and chamber-sensor type in the PlatformIO sidebar / status bar.
+ 
++[env]
+ monitor_speed = 115200
+-
+-board_build.f_cpu = 240000000L
+-board_build.f_flash = 80000000L
+-board_build.partition = app3M_fat9M_16MB.csv
+-board_build.arduino.memory_type = qio_opi
+-board_upload.flash_size = 16MB
+-
++lib_ldf_mode = deep+
+ lib_deps =
+-    lovyan03/LovyanGFX@^1.1.12
+     lvgl/lvgl@8.3.9
+     https://github.com/knolleary/pubsubclient.git
+     ArduinoJson@6.21.5
+     FS
+     SD
+-    https://github.com/PaulStoffregen/OneWire.git
+-    https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+     https://github.com/adafruit/Adafruit_Sensor.git
+     https://github.com/adafruit/DHT-sensor-library.git
++    https://github.com/PaulStoffregen/OneWire.git
++    https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+     https://github.com/me-no-dev/ESPAsyncWebServer.git
++extra_scripts =
++    pre:scripts/pre-build.py
++    pre:scripts/version.py
+ 
++; ---------------------------------------------------------------------------
++; 2.8" board — ESP32-2432S028R (plain ESP32, TFT_eSPI + XPT2046 resistive touch)
++; ---------------------------------------------------------------------------
++[env:esp32-2432s028r]
++platform = espressif32
++board = esp32dev
++framework = arduino
++board_build.filesystem = littlefs
++board_build.partitions = min_spiffs.csv
++monitor_filters = esp32_exception_decoder
++lib_deps =
++    ${env.lib_deps}
++    https://github.com/Bodmer/TFT_eSPI.git
++    https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
++build_flags =
++    -D__XTOUCH_SCREEN_28__
++
++; Same board, DS18B20 chamber sensor instead of the default DHT22
++[env:esp32-2432s028r-ds18b20]
++extends = env:esp32-2432s028r
++build_flags =
++    ${env:esp32-2432s028r.build_flags}
++    -DXTOUCH_CHAMBER_SENSOR_TYPE=2
++
++; ---------------------------------------------------------------------------
++; 5" board — JC8048W550C_I (ESP32-S3, LovyanGFX + GT911 capacitive touch)
++; ---------------------------------------------------------------------------
++[env:jc8048w550c_i]
++platform = espressif32
++board = esp32-s3-devkitc-1
++framework = arduino
++board_build.f_cpu = 240000000L
++board_build.f_flash = 80000000L
++board_build.partition = app3M_fat9M_16MB.csv
++board_build.arduino.memory_type = qio_opi
++board_upload.flash_size = 16MB
++lib_deps =
++    ${env.lib_deps}
++    lovyan03/LovyanGFX@^1.1.12
+ build_flags =
+     -D__XTOUCH_SCREEN_50__
+     -DBOARD_HAS_PSRAM
+@@ -37,6 +68,10 @@ build_flags =
+     -mfix-esp32-psram-cache-issue
+     -D LV_CONF_PATH="${PROJECT_DIR}/resources/lv_conf.h"
+ 
+-extra_scripts =
+-    pre:scripts/pre-build.py
+-    pre:scripts/version.py
++; Same board, DS18B20 chamber sensor instead of the default DHT22
++[env:jc8048w550c_i-ds18b20]
++extends = env:jc8048w550c_i
++build_flags =
++    ${env:jc8048w550c_i.build_flags}
++    -DXTOUCH_CHAMBER_SENSOR_TYPE=2
++
+diff --git a/src/main.cpp b/src/main.cpp
+index fc9894e..66afe86 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -14,6 +14,10 @@
+ 
+ #if defined(__XTOUCH_SCREEN_50__)
+ #include "devices/5.0/screen.h"
++#elif defined(__XTOUCH_SCREEN_28__)
++#include "devices/2.8/screen.h"
++#else
++#error "Define __XTOUCH_SCREEN_50__ or __XTOUCH_SCREEN_28__ (set automatically by the platformio.ini environment you build)"
+ #endif
+ 
+ #include "xtouch/settings.h"
+diff --git a/src/xtouch/sensors/chamber.h b/src/xtouch/sensors/chamber.h
+index 065e10b..19871b5 100644
+--- a/src/xtouch/sensors/chamber.h
++++ b/src/xtouch/sensors/chamber.h
+@@ -3,13 +3,28 @@
+ 
+ #include "ha_mqtt.h"
+ 
++// Default chamber sensor GPIO per board — override with a build flag
++// (-DXTOUCH_CHAMBER_TEMP_PIN=n) if your wiring differs.
++// GPIO17 is free on the ESP32-S3 5" board; GPIO22 (the original default)
++// works fine on the plain ESP32 used by the 2.8" board, but not on the S3
++// (GPIO22-25 don't exist on that chip).
++#ifndef XTOUCH_CHAMBER_TEMP_PIN
++#if defined(__XTOUCH_SCREEN_50__)
+ #define XTOUCH_CHAMBER_TEMP_PIN 17
++#else
++#define XTOUCH_CHAMBER_TEMP_PIN 22
++#endif
++#endif
+ 
+-// ---- Pick your physical chamber sensor here ----
+-// Set to DHT22 or DS18B20. Only one can be active per build.
++// ---- Pick your physical chamber sensor here, or override via build flag ----
++// Set XTOUCH_CHAMBER_SENSOR_TYPE to 1 (DHT22) or 2 (DS18B20), e.g.
++// -DXTOUCH_CHAMBER_SENSOR_TYPE=2 in platformio.ini build_flags.
++// Only one can be active per build.
+ #define XTOUCH_CHAMBER_SENSOR_DHT22 1
+ #define XTOUCH_CHAMBER_SENSOR_DS18B20 2
++#ifndef XTOUCH_CHAMBER_SENSOR_TYPE
+ #define XTOUCH_CHAMBER_SENSOR_TYPE XTOUCH_CHAMBER_SENSOR_DHT22
++#endif
+ // --------------------------------------------------
+ 
+ #if XTOUCH_CHAMBER_SENSOR_TYPE == XTOUCH_CHAMBER_SENSOR_DHT22
