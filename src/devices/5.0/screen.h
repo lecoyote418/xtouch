@@ -66,7 +66,7 @@ public:
       cfg.pin_vsync   = GPIO_NUM_41;
       cfg.pin_hsync   = GPIO_NUM_39;
       cfg.pin_pclk    = GPIO_NUM_42;
-      cfg.freq_write  = 14000000; // TBD: 14000000;
+      cfg.freq_write  = 12000000; // TBD: 14000000;
 
       cfg.hsync_polarity    = 0;
       cfg.hsync_front_porch = 8;
@@ -134,7 +134,11 @@ static lv_color_t buf[screenWidth * 10];
 
 LGFX tft;
 
-#include "ui/ui.h"
+#if defined(__XTOUCH_SCREEN_50__)
+#include "ui/5.0/ui.h"
+#elif defined(__XTOUCH_SCREEN_28__)
+#include "ui/2.8/ui.h"
+#endif
 #include "touch.h"
 #include "xtouch/globals.h"
 

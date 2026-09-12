@@ -5,7 +5,11 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "ui/ui_msgs.h"
+#if defined(__XTOUCH_SCREEN_50__)
+#include "ui/5.0/ui_msgs.h"
+#elif defined(__XTOUCH_SCREEN_28__)
+#include "ui/2.8/ui_msgs.h"
+#endif
 #include "types.h"
 #include "autogrowstream.h"
 #include "bbl-certs.h"
@@ -729,6 +733,7 @@ void xtouch_mqtt_connect()
 {
 
     ConsoleInfo.println(F("[XTouch][MQTT] Connecting"));
+    ConsoleInfo.printf("[XTouch][MQTT] Free heap before connect: %u bytes\n", ESP.getFreeHeap());
 
     if (!xtouch_mqtt_firstConnectionDone)
     {

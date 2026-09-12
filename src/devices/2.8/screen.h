@@ -27,7 +27,11 @@ static lv_color_t buf[4096];
 
 TFT_eSPI tft = TFT_eSPI(screenWidth, screenHeight); /* TFT instance */
 
-#include "ui/ui.h"
+#if defined(__XTOUCH_SCREEN_50__)
+#include "ui/5.0/ui.h"
+#elif defined(__XTOUCH_SCREEN_28__)
+#include "ui/2.8/ui.h"
+#endif
 #include "touch.h"
 #include "xtouch/globals.h"
 
