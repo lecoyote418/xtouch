@@ -69,7 +69,10 @@ void onTemperatureBed(const char *value)
 
     lv_msg_send(XTOUCH_COMMAND_BED_TARGET_TEMP, value);
 }
-void onTemperatureNozzle(int32_t value) { lv_msg_send(XTOUCH_COMMAND_NOZZLE_TARGET_TEMP, &value); }
+// Signature must match ui_events.h exactly: on ESP32 with IDF 5.x,
+// int32_t is a typedef for long int, which is a distinct type from int, so
+// "int" here (not int32_t) is what avoids a conflicting-types error.
+void onTemperatureNozzle(int value) { lv_msg_send(XTOUCH_COMMAND_NOZZLE_TARGET_TEMP, &value); }
 void onTemperaturePart(lv_event_t *e) { lv_msg_send(XTOUCH_CONTROL_INC_SWITCH, NULL); }
 void onTemperatureAux(lv_event_t *e) { lv_msg_send(XTOUCH_CONTROL_INC_SWITCH, NULL); }
 void onTemperatureKeypad(lv_event_t *e) { lv_msg_send(XTOUCH_CONTROL_INC_SWITCH, NULL); }
@@ -125,6 +128,16 @@ void onSettingsOTA(lv_event_t *e)
 {
     xTouchConfig.xTouchOTAEnabled = !xTouchConfig.xTouchOTAEnabled;
     lv_msg_send(XTOUCH_SETTINGS_SAVE, NULL);
+}
+
+// Home Assistant local-broker link. The flag lives in config.json (not
+// settings.json, which is written wholesale by XTOUCH_SETTINGS_SAVE and does not
+// carry the homeassistant block), so the actual persist/start/stop happens in
+// xtouch_events_onHASwitch().
+void onSettingsHA(lv_event_t *e)
+{
+    xTouchConfig.xTouchHAEnabled = !xTouchConfig.xTouchHAEnabled;
+    lv_msg_send(XTOUCH_SETTINGS_HA, NULL);
 }
 
 void onSettingsTFTFlip(lv_event_t *e)

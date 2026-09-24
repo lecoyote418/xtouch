@@ -76,6 +76,27 @@ void xtouch_events_onChamberTempSwitch(lv_msg_t *m)
     }
 }
 
+// Home Assistant switch from the settings screen. The link is started/stopped
+// right away (no reboot), and the flag is persisted in config.json.
+void xtouch_events_onHASwitch(lv_msg_t *m)
+{
+    // The "homeassistant" block lives in config.json - settings.json is written
+    // wholesale by XTOUCH_SETTINGS_SAVE and does not carry it - so this is a
+    // read-modify-write of the full config document to keep every other key.
+    DynamicJsonDocument config = xtouch_filesystem_readJson(SD, xtouch_paths_config);
+    config["homeassistant"]["enabled"] = xTouchConfig.xTouchHAEnabled;
+    xtouch_filesystem_writeJson(SD, xtouch_paths_config, config);
+
+    if (xTouchConfig.xTouchHAEnabled)
+    {
+        xtouch_ha_mqtt_start();
+    }
+    else
+    {
+        xtouch_ha_mqtt_stop();
+    }
+}
+
 void xtouch_setupGlobalEvents()
 {
     lv_msg_subscribe(XTOUCH_SETTINGS_RESET_DEVICE, (lv_msg_subscribe_cb_t)xtouch_events_onResetDevice, NULL);
@@ -85,6 +106,10 @@ void xtouch_setupGlobalEvents()
     lv_msg_subscribe(XTOUCH_SETTINGS_TFT_INVERT, (lv_msg_subscribe_cb_t)xtouch_events_onTFTInvert, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_SAVE, (lv_msg_subscribe_cb_t)xtouch_events_onSettingsSave, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_CHAMBER_TEMP, (lv_msg_subscribe_cb_t)xtouch_events_onChamberTempSwitch, NULL);
+#if defined(__XTOUCH_SCREEN_50__)
+    // The Home Assistant switch only exists in the 5.0 settings screen.
+    lv_msg_subscribe(XTOUCH_SETTINGS_HA, (lv_msg_subscribe_cb_t)xtouch_events_onHASwitch, NULL);
+#endif
     lv_msg_subscribe(XTOUCH_SETTINGS_TFT_FLIP, (lv_msg_subscribe_cb_t)xtouch_events_onTFTFlip, NULL);
 }
 

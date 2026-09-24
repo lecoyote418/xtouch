@@ -85,63 +85,18 @@ bool hasTouchConfig()
 
 void xtouch_touch_setup()
 {
-    if (hasTouchConfig())
-    {
-        ConsoleInfo.println(F("[XTouch][TOUCH] Load from disk"));
-        xtouch_loadTouchConfig(x_touch_touchConfig);
-    }
-    else
-    {
-        ConsoleInfo.println(F("[XTouch][TOUCH] Touch Setup"));
-        int16_t x1, y1, x2, y2;
-
-        lv_label_set_text(introScreenCaption, "Touch the  " LV_SYMBOL_PLUS "  with the stylus");
-        lv_timer_handler();
-
-        // wait for no touch
-        int16_t x, y;
-        while (tft.getTouch(&x, &y))
-            ;
-        tft.drawFastHLine(0, 10, 20, 0xFFFFFFU);
-        tft.drawFastVLine(10, 0, 20, 0xFFFFFFU);
-        while (!tft.getTouch(&x, &y))
-            ;
-        delay(50);
-        /// TBD should average over multiple captures
-        tft.getTouch(&x, &y);
-        x1 = x;
-        y1 = y;
-        tft.drawFastHLine(0, 10, 20, 0x000000U);
-        tft.drawFastVLine(10, 0, 20, 0x000000U);
-        delay(500);
-
-        while (tft.getTouch(&x, &y))
-            ;
-        tft.drawFastHLine(780, 470, 20, 0xFFFFFFU);
-        tft.drawFastVLine(790, 460, 20, 0xFFFFFFU);
-
-        while (!tft.getTouch(&x, &y))
-            ;
-        delay(50);
-        tft.getTouch(&x, &y);
-        x2 = x;
-        y2 = y;
-        tft.drawFastHLine(780, 470, 20, 0x000000U);
-        tft.drawFastVLine(790, 460, 20, 0x000000U);
-
-        int16_t xDist = 800 - 40;
-        int16_t yDist = 480 - 40;
-
-        x_touch_touchConfig.xCalM = (float)xDist / (float)(x2 - x1);
-        x_touch_touchConfig.xCalC = 20.0 - ((float)x1 * x_touch_touchConfig.xCalM);
-        // y
-        x_touch_touchConfig.yCalM = (float)yDist / (float)(y2 - y1);
-        x_touch_touchConfig.yCalC = 20.0 - ((float)y1 * x_touch_touchConfig.yCalM);
-
-        xtouch_saveTouchConfig(x_touch_touchConfig);
-
-        loadScreen(-1);
-    }
+    // The GT911 on this panel reports coordinates directly in the panel's own
+    // 800x480 space (the controller is factory-configured for that resolution,
+    // as the vendor board definition also assumes), so touch needs no
+    // calibration. The interactive two-crosshair calibration that this board
+    // inherited from the 2.8" resistive panel is deliberately NOT run:
+    //   - it blocks the boot waiting for two touch points, and
+    //   - if it is interrupted it leaves a half-written /xtouch/touch.json
+    //     behind, which then maps every touch to the wrong place. That is
+    //     exactly the failure that made the UI look unresponsive.
+    // The mapping helpers below are kept only so the rest of the code (and a
+    // future calibration option) still compiles.
+    ConsoleInfo.println(F("[XTouch][TOUCH] GT911 native 800x480 resolution - no calibration"));
 }
 
 #endif

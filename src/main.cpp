@@ -70,8 +70,18 @@ void setup()
   xtouch_screen_setupScreenTimer();
   xtouch_setupGlobalEvents();
 
+  // Build with -DXTOUCH_DISABLE_MQTT=1 to run with no MQTT/HA network traffic
+  // at all (the display and UI still work). Mainly a diagnostic: it separates
+  // glitches caused by network activity from glitches caused by UI updates.
+#if !defined(XTOUCH_DISABLE_MQTT)
   xtouch_mqtt_setup();
   xtouch_ha_mqtt_setup();
+#else
+  ConsoleInfo.println(F("[XTouch] MQTT disabled (XTOUCH_DISABLE_MQTT)"));
+  // Normally the first MQTT connection loads the home screen; without MQTT do
+  // it here so the UI is still exercised.
+  loadScreen(0);
+#endif
   xtouch_chamber_timer_init();
 }
 
@@ -79,6 +89,8 @@ void loop()
 {
   lv_timer_handler();
   lv_task_handler();
+#if !defined(XTOUCH_DISABLE_MQTT)
   xtouch_mqtt_loop();
   xtouch_ha_mqtt_loop();
+#endif
 }

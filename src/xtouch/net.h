@@ -3,6 +3,9 @@
 
 #include <WiFi.h>
 #include <WiFiClient.h>
+// In Arduino core 3.x this header moved into the "Networking"/NetworkClientSecure
+// library, but the <WiFiClientSecure.h> name still resolves on both cores.
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <MD5Builder.h>
 #include "bbl-certs.h"

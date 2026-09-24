@@ -223,6 +223,10 @@ int printingLevelToIndex(int lvl)
         return 2;
     case XTOUCH_SPEED_LEVEL_RAMPAGE:
         return 3;
+    default:
+        // Arduino core 3.x builds with -Werror=return-type; keep an explicit
+        // fallback for out-of-range levels instead of falling off the end.
+        return 1;
     }
 }
 

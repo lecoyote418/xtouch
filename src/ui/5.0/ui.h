@@ -66,6 +66,7 @@ extern "C"
   lv_obj_t *ui_settings_chamberFanSwitch;
   lv_obj_t *ui_settings_chamberSensorSwitch;
   lv_obj_t *ui_settings_otaSwitch;
+  lv_obj_t *ui_settings_haSwitch;
   lv_obj_t *ui_confirmComponent; // layertop
   lv_obj_t *ui_hmsComponent;     // layertop
   lv_obj_t *ui_mainStatusComponent;

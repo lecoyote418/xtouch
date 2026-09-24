@@ -2,3 +2,19 @@
 .vscode
 .DS_Store
 node_modules
+
+# pioarduino writes these into the project root for custom_sdkconfig builds
+# (sdkconfig.defaults carries a "# TASMOTA__<hash>" header used to detect
+# configuration changes).
+sdkconfig.defaults
+sdkconfig.*
+sdkconfig.old
+# ...but this one is a checked-in source file (the 5" board's sdkconfig
+# additions referenced from platformio.ini).
+!sdkconfig.xtouch50
+
+# pioarduino hybrid-compile scaffolding (generated, download-on-build)
+managed_components/
+.dummy/
+src/idf_component.yml
+src/idf_component.yml.orig

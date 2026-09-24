@@ -1,0 +1,18 @@
+# Partition table for the 5" JC8048W550C board (16 MB flash).
+#
+# Kept in the project instead of using the framework's default_16MB.csv
+# because pioarduino's hybrid compile (custom_sdkconfig) resolves
+# board_build.partitions against the ESP-IDF partition_table directory and
+# then against the project directory - a name that only exists in the Arduino
+# framework's tools/partitions/ directory fails there.
+#
+# A spiffs partition must be present: src/xtouch/eeprom.h stores its settings
+# in SPIFFS.
+#
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+otadata,  data, ota,     0xe000,  0x2000,
+app0,     app,  ota_0,   0x10000, 0x640000,
+app1,     app,  ota_1,   0x650000,0x640000,
+spiffs,   data, spiffs,  0xc90000,0x360000,
+coredump, data, coredump,0xFF0000,0x10000,

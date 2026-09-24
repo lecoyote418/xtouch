@@ -47,6 +47,13 @@ bool xtouch_wifi_setup()
         passwordString.c_str()
     );
 
+#if defined(__XTOUCH_SCREEN_50__)
+    // esp_wifi_start() (PHY calibration) is the classic way to knock the
+    // ESP32-S3 RGB LCD DMA out of sync; re-sync right after the radio starts,
+    // and again once the connection has settled (below).
+    xtouch_screen_restartPanel();
+#endif
+
     ConsoleInfo.println(F("[XTOUCH][CONNECTION] Connecting to WiFi .."));
 
     lv_label_set_text(introScreenCaption, LV_SYMBOL_WIFI " Connecting");
@@ -112,6 +119,12 @@ bool xtouch_wifi_setup()
     }
 
     WiFi.setTxPower(WIFI_POWER_19_5dBm); // https://github.com/G6EJD/ESP32-8266-Adjust-WiFi-RF-Power-Output/blob/main/README.md
+
+#if defined(__XTOUCH_SCREEN_50__)
+    // The radio is up and has finished its PHY calibration burst, so this is
+    // the safe point to clear any DMA desync it caused.
+    xtouch_screen_restartPanel();
+#endif
 
     delay(1000);
     lv_label_set_text(introScreenCaption, LV_SYMBOL_WIFI " Connected");

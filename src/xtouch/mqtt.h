@@ -39,9 +39,18 @@ XtouchAutoGrowBufferStream stream;
 
 void xtouch_mqtt_sendMsg(XTOUCH_MESSAGE message, unsigned long long data = 0)
 {
+#if defined(XTOUCH_DISABLE_MQTT_UI_UPDATES)
+    // Diagnostic, see platformio.ini. MQTT still connects, every status push is
+    // still received, parsed and applied to bambuStatus - only the UI updates
+    // (and therefore the LVGL repaints) are suppressed. This separates
+    // "receiving/parsing a message" from "repainting because of it".
+    (void)message;
+    (void)data;
+#else
     XTOUCH_MESSAGE_DATA eventData;
     eventData.data = data;
     lv_msg_send(message, &eventData);
+#endif
 }
 
 void xtouch_mqtt_topic_setup()

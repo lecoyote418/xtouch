@@ -1,0 +1,48 @@
+# XTouch 5" board (JC8048W550C) sdkconfig additions.
+#
+# Applied by pioarduino's custom_sdkconfig (see platformio.ini). This lives in
+# a file instead of inline in platformio.ini because PlatformIO's INI parser
+# strips lines starting with "#", and "# CONFIG_X is not set" is the only way
+# to force an option OFF.
+#
+# See the ESP-FAQ "Why do I get drift when ESP32-S3 drives an RGB LCD" entry.
+
+# Enabled: load code + read-only data into PSRAM.
+#
+# This keeps PSRAM usable while the main flash is being written (Wi-Fi
+# calibration, OTA, the TFT-flip setting), which otherwise starves the LCD's
+# EDMA - proven with the -DLCDTEST_FLASH stressor in src/lcdtest, which produced
+# heavy glitches with this off and none with it on.
+#
+# It matters more now that the display runs in bounce-buffer mode: the CPU
+# refills the bounce buffers from the PSRAM framebuffer inside the DMA EOF
+# interrupt, and that refill needs PSRAM to be reachable even during a flash
+# write. This pairing - XIP on PSRAM + RGB bounce buffer - is exactly what the
+# FAQ recommends for Wi-Fi / BLE / continuous-flash-write applications.
+CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+
+# 32-byte data cache line. The FAQ recommends 32 bytes for RGB LCD driving
+# (64 is for bounce-buffer mode), and each cache miss pulls in half the PSRAM
+# traffic.
+CONFIG_ESP32S3_DATA_CACHE_LINE_32B=y
+# CONFIG_ESP32S3_DATA_CACHE_LINE_64B is not set
+
+# Keep Wi-Fi/LWIP buffers in internal SRAM rather than PSRAM, so Wi-Fi does not
+# compete with the LCD for PSRAM bandwidth.
+# CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP is not set
+
+# MUST STAY OFF while the display uses bounce buffers.
+#
+# This option restarts the GDMA channel every VBlank. In bounce-buffer mode the
+# driver resets the DMA to bounce buffer 0 on each restart but never resets its
+# bb_eof_count parity counter, so a single lost EOF inverts the buffer selection
+# and corrupts the picture permanently - nothing recovers it short of deleting
+# and recreating the panel (espressif/esp-idf#19070).
+#
+# It is also the option that was masking the real problem: in double-framebuffer
+# mode every draw_bitmap call cache-syncs the whole 768 KB framebuffer (see the
+# comment in src/devices/5.0/screen.h), which is what starved the EDMA during
+# repaints. Turning this on merely papered over the resulting desync and turned
+# a shift into a flash.
+#
+# CONFIG_LCD_RGB_RESTART_IN_VSYNC is not set
